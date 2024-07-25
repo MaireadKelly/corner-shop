@@ -1,5 +1,8 @@
 import gspread
 from google.oauth2.service_account import Credentials
+import re
+from datetime import date
+
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -12,8 +15,14 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
-stock = SHEET.worksheet('stock')
+sales = SHEET.worksheet('sales')
 
-data = stock.get_all_values()
+data = sales.get_all_values()
 
 print(data)
+
+
+
+
+
+  
