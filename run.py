@@ -21,6 +21,16 @@ User login, gets username from staff member.
 username = input("Please enter your username: ")
 print("Hello " + username)
 
+def get_user_password():
+    """ 
+    Get users password to go forward to data input 
+    """
+    print("Password should be 6 digits long with NO spaces OR commas")
+        
+    data_int = input("Please enter your password: ")
+
+get_user_password()
+
 
 def get_sales_data():
     """ 
@@ -32,7 +42,9 @@ def get_sales_data():
     print("Data should be six numbers separated by commas")
 
     data_str = input("Please enter your data:\n")
-    print(f"The data provided is {data_str}")
+    
+    sales_data = data_str.split(",")
+    print(sales_data)
 
 get_sales_data()
 
