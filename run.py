@@ -15,6 +15,13 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
+"""
+User login, gets username from staff member.
+"""
+username = input("Please enter your username: ")
+print("Hello " + username)
+
+
 def get_sales_data():
     """
     Get sales figures input from the user.
@@ -66,14 +73,21 @@ def update_sales_worksheet(data):
     sales_worksheet.append_row(data)
     print("Sales worksheet updated successfully.\n")
 
-def calculate_remaining_stock(sales_row):
+def calculate_remaining_data(sales_row):
     """
     Calculate remaining stock for each item by subtracting sales from stock
     """
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
     stock_row = stock[-1]
-    print(stock_row)
+
+    remaining_data = []
+    for stock, sales in zip(stock_row, sales_row):
+        remaining = int(stock) - sales
+        remaining_data.append(remaining)
+    
+    return remaining_data
+ 
 
 def main():
     """ 
@@ -82,9 +96,8 @@ def main():
 data = get_sales_data()
 sales_data = [int(num) for num in data]
 update_sales_worksheet(sales_data)
-calculate_remaining_stock(sales_data)
-
-
+new_remaining_data = calculate_remaining_data(sales_data)
+print(new_remaining_data)
 
 print("Welcome to The Sweet Spot Stock Control System")
 main()
