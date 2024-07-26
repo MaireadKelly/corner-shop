@@ -98,6 +98,25 @@ def calculate_remaining_data(sales_row):
     
     return remaining_data
 
+def check_and_order_stock(remaining_data):
+    print("Checking if any items need reordering...\n")  
+    order_worksheet = SHEET.worksheet("orders")
+    orders_to_place = []
+
+    for index, remaining in enumerate(remaining_data):
+        if remaining < 10:
+            item_name = f"Item {index+1}"
+            order_quantity = 20
+            order_date = date.today().strftime("%Y-%m-%d")
+            orders_to_place.append([item_name, order_quantity, order_date])
+        
+    if orders_to_place:
+        print("Placing orders for items with low stock....\n")
+        for order in orders_to_place:
+            order_worksheet.append_row(order)
+            print("Orders placed successfully!\n")
+    else:
+            print("No items need reordering\n")
 
 def main():
     """ 
@@ -108,5 +127,6 @@ sales_data = [int(num) for num in data]
 update_sales_worksheet(sales_data)
 new_remaining_data = calculate_remaining_data(sales_data)
 update_stock_worksheet(new_remaining_data)
+check_and_order_stock(new_remaining_data)
 
 main()
