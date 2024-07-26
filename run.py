@@ -90,24 +90,24 @@ def calculate_remaining_data(sales_row):
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
     stock_row = stock[-1]
+    item_names = stock[0] # get stock item names from the first row
 
     remaining_data = []
     for stock, sales in zip(stock_row, sales_row):
         remaining = int(stock) - sales
         remaining_data.append(remaining)
     
-    return remaining_data
+    return item_names, remaining_data
 
-def check_and_order_stock(remaining_data):
+def check_and_order_stock(item_names, remaining_data):
     print("Checking if any items need reordering...\n")  
     order_worksheet = SHEET.worksheet("orders")
     orders_to_place = []
 
-    for index, remaining in enumerate(remaining_data):
+    for item_name, remaining in zip(item_names, remaining_data):
         if remaining < 10:
-            item_name = f"Item {index+1}"
             order_quantity = 20
-            order_date = date.today().strftime("%Y-%m-%d")
+            order_date = date.today().strftime("%d-%m-%Y")
             orders_to_place.append([item_name, order_quantity, order_date])
         
     if orders_to_place:
@@ -125,8 +125,8 @@ def main():
 data = get_sales_data()
 sales_data = [int(num) for num in data]
 update_sales_worksheet(sales_data)
-new_remaining_data = calculate_remaining_data(sales_data)
+item_names, new_remaining_data = calculate_remaining_data(sales_data)
 update_stock_worksheet(new_remaining_data)
-check_and_order_stock(new_remaining_data)
+check_and_order_stock(item_names, new_remaining_data)
 
 main()
