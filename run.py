@@ -1,6 +1,5 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from pprint import pprint
 from datetime import date
 
 
@@ -35,7 +34,7 @@ def get_sales_data():
         print("Data should be six numbers, separated by commas.")
         print("Example: 10,20,30,40,50,60\n")
 
-        data_str = input("Enter your data here: ")
+        data_str = input("Enter your data here: \n")
 
         sales_data = data_str.split(",")
 
@@ -122,11 +121,11 @@ def main():
     """ 
     Run all program functions
     """
-data = get_sales_data()
-sales_data = [int(num) for num in data]
-update_sales_worksheet(sales_data)
-item_names, new_remaining_data = calculate_remaining_data(sales_data)
-update_stock_worksheet(new_remaining_data)
-check_and_order_stock(item_names, new_remaining_data)
+    data = get_sales_data()
+    sales_data = [int(num) for num in data]
+    update_sales_worksheet(sales_data)
+    item_names, new_remaining_data = calculate_remaining_data(sales_data)
+    update_stock_worksheet(new_remaining_data)
+    check_and_order_stock(item_names, new_remaining_data)
 
 main()
