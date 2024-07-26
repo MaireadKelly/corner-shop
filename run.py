@@ -16,8 +16,9 @@ GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
 """
-User login, gets username from staff member.
+Welcome user and procees to User login, gets username from staff member.
 """
+print("Welcome to The Sweet Spot Stock Control System")
 username = input("Please enter your username: ")
 print("Hello " + username)
 
@@ -73,9 +74,18 @@ def update_sales_worksheet(data):
     sales_worksheet.append_row(data)
     print("Sales worksheet updated successfully.\n")
 
+def update_stock_worksheet(data):
+    """
+    Update stock worksheet, add new row with the list data provided
+    """
+    print("Updating stock worksheet, please wait...\n")
+    stock_worksheet = SHEET.worksheet("stock")
+    stock_worksheet.append_row(data)
+    print("Stock worksheet updated successfully.\n")
+
 def calculate_remaining_data(sales_row):
     """
-    Calculate remaining stock for each item by subtracting sales from stock
+    Calculate remaining stock for each item by subtracting sales data from stock data
     """
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
@@ -87,7 +97,7 @@ def calculate_remaining_data(sales_row):
         remaining_data.append(remaining)
     
     return remaining_data
- 
+
 
 def main():
     """ 
@@ -97,7 +107,6 @@ data = get_sales_data()
 sales_data = [int(num) for num in data]
 update_sales_worksheet(sales_data)
 new_remaining_data = calculate_remaining_data(sales_data)
-print(new_remaining_data)
+update_stock_worksheet(new_remaining_data)
 
-print("Welcome to The Sweet Spot Stock Control System")
 main()
