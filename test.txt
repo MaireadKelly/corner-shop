@@ -105,8 +105,16 @@ def check_and_order_stock(item_names, remaining_data):
 
     for item_name, remaining in zip(item_names, remaining_data):
         if remaining < 10:
-            print("You need to reorder stock....\n")                    
-        else:
+            order_quantity = 20
+            order_date = date.today().strftime("%d-%m-%Y")
+            orders_to_place.append([item_name, order_quantity, order_date])
+        
+    if orders_to_place:
+        print("Placing orders for items with low stock....\n")
+        for order in orders_to_place:
+            order_worksheet.append_row(order)
+            print("Orders placed successfully!\n")
+    else:
             print("No items need reordering\n")
 
 def main():
