@@ -25,8 +25,18 @@ def validate_username(username):
     # Return True if the username matches the pattern, otherwise False
     return bool(pattern.match(username))
 
+def validate_password(password):
+    """
+    Validate the password to ensure it is exactly 6 digits.
+    """
+    # Regex pattern to match exactly 6 digits
+    pattern = re.compile(r"^[A-Za-z]+$")
+    # Return True if the password matches the pattern, otherwise False
+    return bool(pattern.match(password))
+
 # Welcome message and user login
 print("Welcome to The Sweet Spot Stock Control System")
+
 # Loop to repeatedly ask for username until valid
 while True:
     username = input("Please enter your username: ")
@@ -35,6 +45,15 @@ while True:
         break  # Exit loop if username is valid
     else:
         print("Invalid username. Please use letters only.")
+
+# Loop to repeatedly ask for password until valid
+while True:
+    password = input("Please enter your 6-digit password: ")
+    if validate_password(password):
+        print("Password accepted.")
+        break  # Exit loop if password is valid
+    else:
+        print("Invalid password. Please enter exactly 6 digits.")
 
 def get_sales_data():
     """

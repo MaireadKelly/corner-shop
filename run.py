@@ -30,7 +30,7 @@ def validate_password(password):
     Validate the password to ensure it is exactly 6 digits.
     """
     # Regex pattern to match exactly 6 digits
-    pattern = re.compile(r"^[A-Za-z]+$")
+    pattern = re.compile(r"^\d{6}$")
     # Return True if the password matches the pattern, otherwise False
     return bool(pattern.match(password))
 
