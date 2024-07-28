@@ -2,25 +2,23 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date
 
-
+# Define the scope of the API access
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
-    ]
+]
 
+# Authorize and set up the Google Sheets client
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
-"""
-Welcome user and procees to User login, gets username from staff member.
-"""
+# Welcome message and user login
 print("Welcome to The Sweet Spot Stock Control System")
 username = input("Please enter your username: ")
 print("Hello " + username)
-
 
 def get_sales_data():
     """
@@ -44,11 +42,11 @@ def get_sales_data():
 
     return sales_data
 
-
 def validate_data(values):
     """
-    Inside the try, converts all string values into integers.
-    Raises ValueError if strings cannot be converted into int,
+    Validate the sales data input by the user.
+    Convert all string values into integers.
+    Raise ValueError if strings cannot be converted into int,
     or if there aren't exactly 6 values.
     """
     try:
@@ -63,10 +61,10 @@ def validate_data(values):
 
     return True
 
-
 def update_sales_worksheet(data):
     """
-    Update sales worksheet, add new row with the list data provided
+    Update the sales worksheet with the new sales data.
+    Add a new row with the list of data provided.
     """
     print("Updating sales worksheet...\n")
     sales_worksheet = SHEET.worksheet("sales")
@@ -75,7 +73,8 @@ def update_sales_worksheet(data):
 
 def update_stock_worksheet(data):
     """
-    Update stock worksheet, add new row with the list data provided
+    Update the stock worksheet with the new stock data.
+    Add a new row with the list of data provided.
     """
     print("Updating stock worksheet, please wait...\n")
     stock_worksheet = SHEET.worksheet("stock")
@@ -84,12 +83,12 @@ def update_stock_worksheet(data):
 
 def calculate_remaining_data(sales_row):
     """
-    Calculate remaining stock for each item by subtracting sales data from stock data
+    Calculate remaining stock for each item by subtracting sales data from the latest stock data.
     """
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
     stock_row = stock[-1]
-    item_name = stock[0] # get stock item names from the first row
+    item_name = stock[0]  # Get stock item names from the first row
 
     remaining_data = []
     for stock, sales in zip(stock_row, sales_row):
@@ -98,38 +97,48 @@ def calculate_remaining_data(sales_row):
     
     return item_name, remaining_data
 
-def check_and_order_stock(item_name, remaining_data):
-    print("Checking if any items need reordering...\n")  
-    orders_worksheet = SHEET.worksheet("orders")
-    orders_to_place = []
-
-    for index, (item_name, remaining) in enumerate(zip(item_name, remaining_data)):
-        if remaining < 10:
-            order_quantity = 20
-        print(f"{item_name} needs to be reordered")
-        print(f"Order placed for {item_name}, quantity: {order_quantity}")
-              
-def update_orders_worksheet(data):
+def check_and_order_stock(item_name, remaining_data, sales_data):
     """
-    Update Orders worksheet, add new row with the list data provided
+    Check if any items need reordering and place orders if necessary.
+    Use sales data to determine the order quantity.
+    """
+    print("Checking if any items need reordering...\n")
+    orders_to_place = [0] * len(item_name)  # Initialize a list of zeros with the same length as item_name
+
+    for index, (item, remaining, sales) in enumerate(zip(item_name, remaining_data, sales_data)):
+        if remaining < 10:
+            # Use sales total as order quantity
+            orders_to_place[index] = sales  # Place order in the corresponding index
+            print(f"{item} needs to be reordered")
+            print(f"Order placed for {item}, quantity: {sales}")
+    
+    return orders_to_place
+
+def update_orders_worksheet(orders):
+    """
+    Update the orders worksheet with the new order data.
+    Add a new row with the list of order quantities.
     """
     print("Updating orders worksheet, please wait...\n")
     orders_worksheet = SHEET.worksheet("orders")
-    orders_worksheet.append_row(data)
-    print("Orders worksheet updated successfully.\n")
+    orders_worksheet.append_row(orders)  # Append the list of order quantities
 
     print("Order check complete.\n")
+    print("Orders worksheet updated successfully.\n")
 
 def main():
-    """ 
-    Run all program functions
+    """
+    Run all program functions in sequence.
     """
     data = get_sales_data()
     sales_data = [int(num) for num in data]
     update_sales_worksheet(sales_data)
     item_name, new_remaining_data = calculate_remaining_data(sales_data)
     update_stock_worksheet(new_remaining_data)
-    check_and_order_stock(item_name, new_remaining_data)
-    update_orders_worksheet(data)
+    # Pass sales_data to check_and_order_stock
+    orders = check_and_order_stock(item_name, new_remaining_data, sales_data)
+    # Update orders worksheet with the generated orders
+    update_orders_worksheet(orders)
 
+# Run the main function to start the program
 main()

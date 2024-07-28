@@ -2,21 +2,20 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date
 
-
+# Define the scope of the API access
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
     ]
 
+#Authorise and set up the Google Sheets client
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
-"""
-Welcome user and procees to User login, gets username from staff member.
-"""
+#Welcome message and User Login
 print("Welcome to The Sweet Spot Stock Control System")
 username = input("Please enter your username: ")
 print("Hello " + username)
@@ -89,34 +88,59 @@ def calculate_remaining_data(sales_row):
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
     stock_row = stock[-1]
-    item_names = stock[0] # get stock item names from the first row
+    item_name = stock[0] # Get stock item names from the first row
 
     remaining_data = []
     for stock, sales in zip(stock_row, sales_row):
         remaining = int(stock) - sales
         remaining_data.append(remaining)
     
-    return item_names, remaining_data
+    return item_name, remaining_data
 
-def check_and_order_stock(item_names, remaining_data):
+def check_and_order_stock(item_name, remaining_data, sales_data):
+    """ 
+    Check if any items need reordering and place orders if necessary
+    """
+
     print("Checking if any items need reordering...\n")  
-    order_worksheet = SHEET.worksheet("orders")
+    orders_worksheet = SHEET.worksheet("orders")
     orders_to_place = []
 
-    for item_name, remaining in zip(item_names, remaining_data):
+    for index, (item, remaining, sales) in enumerate(zip(item_name, remaining_data, sales_data)):
         if remaining < 10:
-            order_quantity = 20
-            order_date = date.today().strftime("%d-%m-%Y")
-            orders_to_place.append([item_name, order_quantity, order_date])
-        
-    if orders_to_place:
-        print("Placing orders for items with low stock....\n")
-        for order in orders_to_place:
-            order_worksheet.append_row(order)
-            print("Orders placed successfully!\n")
-    else:
-            print("No items need reordering\n")
+            # Use sales total as order quantity
 
+            order_quantity = sales
+
+            print(f"{item} needs to be reordered")
+
+            print(f"Order placed for {item}, quantity: {order_quantity}")
+
+            # Collect the order data
+
+            orders_to_place.append([item, order_quantity])
+
+    
+
+    return orders_to_place
+
+
+
+def update_orders_worksheet(orders):           
+    """
+    Update the orders worksheet with the new order data.
+    Add a new row with the list of data provided
+    """
+    print("Updating orders worksheet, please wait...\n")
+    orders_worksheet = SHEET.worksheet("orders")
+    for order in orders:
+
+        orders_worksheet.append_row(order)
+        print("Order check complete.\n")
+
+        print("Orders worksheet updated successfully.\n")
+
+    
 def main():
     """ 
     Run all program functions
@@ -124,8 +148,9 @@ def main():
     data = get_sales_data()
     sales_data = [int(num) for num in data]
     update_sales_worksheet(sales_data)
-    item_names, new_remaining_data = calculate_remaining_data(sales_data)
+    item_name, new_remaining_data = calculate_remaining_data(sales_data)
     update_stock_worksheet(new_remaining_data)
-    check_and_order_stock(item_names, new_remaining_data)
+    check_and_order_stock(item_name, new_remaining_data)
+    update_orders_worksheet(data)
 
 main()
