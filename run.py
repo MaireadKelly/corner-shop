@@ -167,17 +167,22 @@ def update_orders_worksheet(orders):
 
 def main():
     """
-    Run all program functions in sequence.
+    Run all program functions in sequence, and ask the user if they want to input more sales data.
     """
-    data = get_sales_data()
-    sales_data = [int(num) for num in data]
-    update_sales_worksheet(sales_data)
-    item_names, new_remaining_data = calculate_remaining_data(sales_data)
-    update_stock_worksheet(new_remaining_data)
-    # Pass sales_data to check_and_order_stock
-    orders = check_and_order_stock(item_names, new_remaining_data, sales_data)
-    # Update orders worksheet with the generated orders
-    update_orders_worksheet(orders)
+    while True:  # Loop to allow repeated data entry
+        data = get_sales_data()
+        sales_data = [int(num) for num in data]
+        update_sales_worksheet(sales_data)
+        item_names, new_remaining_data = calculate_remaining_data(sales_data)
+        update_stock_worksheet(new_remaining_data)
+        orders = check_and_order_stock(item_names, new_remaining_data, sales_data)  # Pass sales_data to check_and_order_stock
+        update_orders_worksheet(orders)  # Update orders worksheet with the generated orders
+
+        # Ask the user if they want to input more sales data
+        more_data = input("Would you like to input more sales data? (yes/no or y/n): ").strip().lower()
+        if more_data not in ('yes', 'y'):
+            print(f"Thank you {username}, all data successfully recorded.")
+            break  # Exit the loop if the user does not want to input more data
 
 # Run the main function to start the program
 main()
