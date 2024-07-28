@@ -1,6 +1,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date
+import re
 
 # Define the scope of the API access
 SCOPE = [
@@ -15,9 +16,22 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('corner-shop')
 
+def validate_username(username):
+    """
+    Validate that the username consists only of letters.
+    """
+    return re.match("^[A-Za-z]+$", username) is not None
+
 # Welcome message and user login
 print("Welcome to The Sweet Spot Stock Control System")
-username = input("Please enter your username: ")
+
+while True:
+    username = input("Please enter your username (letters only): ")
+    if validate_username(username):
+        break
+    else:
+        print("Invalid username. Please use letters only.")
+
 print("Hello " + username)
 
 def get_sales_data():
