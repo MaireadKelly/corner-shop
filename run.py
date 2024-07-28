@@ -107,6 +107,7 @@ def check_and_order_stock(item_name, remaining_data):
         if remaining < 10:
             order_quantity = 20
         print(f"{item_name} needs to be reordered")
+        print(f"Order placed for {item_name}, quantity: {order_quantity}")
               
 def update_orders_worksheet(data):
     """
@@ -115,7 +116,6 @@ def update_orders_worksheet(data):
     print("Updating orders worksheet, please wait...\n")
     orders_worksheet = SHEET.worksheet("orders")
     orders_worksheet.append_row(data)
-    #print(f"Order placed for {item_name}, quantity: {order_quantity}, date: {order_date}")
     print("Orders worksheet updated successfully.\n")
 
     print("Order check complete.\n")
