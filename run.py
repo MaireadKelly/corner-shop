@@ -18,21 +18,42 @@ SHEET = GSPREAD_CLIENT.open('corner-shop')
 
 def validate_username(username):
     """
-    Validate that the username consists only of letters.
+    Validate the username to ensure it contains only letters.
     """
-    return re.match("^[A-Za-z]+$", username) is not None
+    # Regex pattern to match only letters
+    pattern = re.compile("^[A-Za-z]+$")
+    # Return True if the username matches the pattern, otherwise False
+    return bool(pattern.match(username))
+
+def validate_password(password):
+    """
+    Validate the password to ensure it is exactly 6 digits.
+    """
+    # Regex pattern to match exactly 6 digits
+    pattern = re.compile(r"^[A-Za-z]+$")
+    # Return True if the password matches the pattern, otherwise False
+    return bool(pattern.match(password))
 
 # Welcome message and user login
 print("Welcome to The Sweet Spot Stock Control System")
 
+# Loop to repeatedly ask for username until valid
 while True:
-    username = input("Please enter your username (letters only): ")
+    username = input("Please enter your username: ")
     if validate_username(username):
-        break
+        print("Hello " + username)
+        break  # Exit loop if username is valid
     else:
         print("Invalid username. Please use letters only.")
 
-print("Hello " + username)
+# Loop to repeatedly ask for password until valid
+while True:
+    password = input("Please enter your 6-digit password: ")
+    if validate_password(password):
+        print("Password accepted.")
+        break  # Exit loop if password is valid
+    else:
+        print("Invalid password. Please enter exactly 6 digits.")
 
 def get_sales_data():
     """
@@ -102,24 +123,28 @@ def calculate_remaining_data(sales_row):
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
     stock_row = stock[-1]
-    item_name = stock[0]  # Get stock item names from the first row
+    item_names = stock[0]  # Get stock item names from the first row
 
     remaining_data = []
     for stock, sales in zip(stock_row, sales_row):
-        remaining = int(stock) - sales
+        try:
+            remaining = int(stock) - sales
+        except ValueError:
+            print(f"Error: '{stock}' is not a valid number. Please check your stock data.")
+            remaining = 0  # Default value in case of error
         remaining_data.append(remaining)
     
-    return item_name, remaining_data
+    return item_names, remaining_data
 
-def check_and_order_stock(item_name, remaining_data, sales_data):
+def check_and_order_stock(item_names, remaining_data, sales_data):
     """
     Check if any items need reordering and place orders if necessary.
     Use sales data to determine the order quantity.
     """
     print("Checking if any items need reordering...\n")
-    orders_to_place = [0] * len(item_name)  # Initialize a list of zeros with the same length as item_name
+    orders_to_place = [0] * len(item_names)  # Initialize a list of zeros with the same length as item_names
 
-    for index, (item, remaining, sales) in enumerate(zip(item_name, remaining_data, sales_data)):
+    for index, (item, remaining, sales) in enumerate(zip(item_names, remaining_data, sales_data)):
         if remaining < 10:
             # Use sales total as order quantity
             orders_to_place[index] = sales  # Place order in the corresponding index
@@ -147,10 +172,10 @@ def main():
     data = get_sales_data()
     sales_data = [int(num) for num in data]
     update_sales_worksheet(sales_data)
-    item_name, new_remaining_data = calculate_remaining_data(sales_data)
+    item_names, new_remaining_data = calculate_remaining_data(sales_data)
     update_stock_worksheet(new_remaining_data)
     # Pass sales_data to check_and_order_stock
-    orders = check_and_order_stock(item_name, new_remaining_data, sales_data)
+    orders = check_and_order_stock(item_names, new_remaining_data, sales_data)
     # Update orders worksheet with the generated orders
     update_orders_worksheet(orders)
 
