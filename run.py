@@ -1,6 +1,5 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from datetime import date
 import re
 
 # Define the scope of the API access
