@@ -4,40 +4,51 @@ from datetime import date
 import re
 
 # Define the scope of the API access
+
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"
+    "https://www.googleapis.com/auth/drive",
 ]
 
 # Authorize and set up the Google Sheets client
-CREDS = Credentials.from_service_account_file('creds.json')
+
+CREDS = Credentials.from_service_account_file("creds.json")
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
-SHEET = GSPREAD_CLIENT.open('corner-shop')
+SHEET = GSPREAD_CLIENT.open("corner-shop")
+
 
 def validate_username(username):
     """
     Validate the username to ensure it contains only letters.
     """
     # Regex pattern to match only letters
+
     pattern = re.compile("^[A-Za-z]+$")
     # Return True if the username matches the pattern, otherwise False
+
     return bool(pattern.match(username))
+
 
 def validate_password(password):
     """
     Validate the password to ensure it is exactly 6 digits.
     """
     # Regex pattern to match exactly 6 digits
+
     pattern = re.compile(r"^\d{6}$")
     # Return True if the password matches the pattern, otherwise False
+
     return bool(pattern.match(password))
 
+
 # Welcome message and user login
+
 print("Welcome to The Sweet Spot Stock Control System")
 
 # Loop to repeatedly ask for username until valid
+
 while True:
     username = input("Please enter your username: ")
     if validate_username(username):
@@ -45,8 +56,8 @@ while True:
         break  # Exit loop if username is valid
     else:
         print("Invalid username. Please use letters only.")
-
 # Loop to repeatedly ask for password until valid
+
 while True:
     password = input("Please enter your 6-digit password: ")
     if validate_password(password):
@@ -54,6 +65,7 @@ while True:
         break  # Exit loop if password is valid
     else:
         print("Invalid password. Please enter exactly 6 digits.")
+
 
 def get_sales_data():
     """
@@ -74,8 +86,8 @@ def get_sales_data():
         if validate_data(sales_data):
             print("Data is valid!")
             break
-
     return sales_data
+
 
 def validate_data(values):
     """
@@ -93,8 +105,8 @@ def validate_data(values):
     except ValueError as e:
         print(f"Invalid data: {e}, please try again.\n")
         return False
-
     return True
+
 
 def update_sales_worksheet(data):
     """
@@ -106,6 +118,7 @@ def update_sales_worksheet(data):
     sales_worksheet.append_row(data)
     print("Sales worksheet updated successfully.\n")
 
+
 def update_stock_worksheet(data):
     """
     Update the stock worksheet with the new stock data.
@@ -116,9 +129,11 @@ def update_stock_worksheet(data):
     stock_worksheet.append_row(data)
     print("Stock worksheet updated successfully.\n")
 
+
 def calculate_remaining_data(sales_row):
     """
-    Calculate remaining stock for each item by subtracting sales data from the latest stock data.
+    Calculate remaining stock for each item by
+    subtracting sales data from the latest stock data.
     """
     print("Calculating remaining stock, please wait...\n")
     stock = SHEET.worksheet("stock").get_all_values()
@@ -130,11 +145,11 @@ def calculate_remaining_data(sales_row):
         try:
             remaining = int(stock) - sales
         except ValueError:
-            print(f"Error: '{stock}' is not a valid number. Please check your stock data.")
+            print(f"Error: '{stock}' is not a valid number check your data.")
             remaining = 0  # Default value in case of error
         remaining_data.append(remaining)
-    
     return item_names, remaining_data
+
 
 def check_and_order_stock(item_names, remaining_data, sales_data):
     """
@@ -142,16 +157,22 @@ def check_and_order_stock(item_names, remaining_data, sales_data):
     Use sales data to determine the order quantity.
     """
     print("Checking if any items need reordering...\n")
-    orders_to_place = [0] * len(item_names)  # Initialize a list of zeros with the same length as item_names
+    # Initialize a list of zeros with the same length as item_names
 
-    for index, (item, remaining, sales) in enumerate(zip(item_names, remaining_data, sales_data)):
+    orders_to_place = [0] * len(item_names)
+
+    for index, (item, remaining, sales) in enumerate(
+        zip(item_names, remaining_data, sales_data)
+    ):
         if remaining < 10:
             # Use sales total as order quantity
-            orders_to_place[index] = sales  # Place order in the corresponding index
+            # Place order in the corresponding index
+
+            orders_to_place[index] = sales
             print(f"{item} needs to be reordered")
             print(f"Order placed for {item}, quantity: {sales}")
-    
     return orders_to_place
+
 
 def update_orders_worksheet(orders):
     """
@@ -165,9 +186,11 @@ def update_orders_worksheet(orders):
     print("Order check complete.\n")
     print("Orders worksheet updated successfully.\n")
 
+
 def main():
     """
-    Run all program functions in sequence, and ask the user if they want to input more sales data.
+    Run all program functions in sequence, and ask
+    the user if they want to input more sales data.
     """
     while True:  # Loop to allow repeated data entry
         data = get_sales_data()
@@ -175,14 +198,23 @@ def main():
         update_sales_worksheet(sales_data)
         item_names, new_remaining_data = calculate_remaining_data(sales_data)
         update_stock_worksheet(new_remaining_data)
-        orders = check_and_order_stock(item_names, new_remaining_data, sales_data)  # Pass sales_data to check_and_order_stock
-        update_orders_worksheet(orders)  # Update orders worksheet with the generated orders
+        # Pass sales_data to check_and_order_stock
+
+        orders = check_and_order_stock(
+            item_names, new_remaining_data, sales_data
+        )
+        # Update orders worksheet with the generated orders
+
+        update_orders_worksheet(orders)
 
         # Ask the user if they want to input more sales data
-        more_data = input("Would you like to input more sales data? (yes/no or y/n): ").strip().lower()
-        if more_data not in ('yes', 'y'):
+
+        more_data = input("Input more data? (yes/no or y/n): ").strip().lower()
+        if more_data not in ("yes", "y"):
             print(f"Thank you {username}, all data successfully recorded.")
             break  # Exit the loop if the user does not want to input more data
 
+
 # Run the main function to start the program
+
 main()
